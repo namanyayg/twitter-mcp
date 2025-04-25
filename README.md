@@ -2,7 +2,7 @@
 
 <!-- [![smithery badge](https://smithery.ai/badge/@enescinar/twitter-mcp)](https://smithery.ai/server/@enescinar/twitter-mcp) -->
 
-This MCP server allows Clients to interact with Twitter, enabling posting tweets and searching Twitter.
+This MCP server allows Clients to interact with Twitter, enabling posting tweets with media attachments and searching Twitter.
 
 <!-- <a href="https://glama.ai/mcp/servers/dhsudtc7cd">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/dhsudtc7cd/badge" alt="Twitter Server MCP server" />
@@ -36,9 +36,10 @@ This MCP server allows Clients to interact with Twitter, enabling posting tweets
 
 3. Restart Claude Desktop
 
-That's it! Claude can now interact with Twitter through two tools:
+That's it! Claude can now interact with Twitter through these tools:
 
-- `post_tweet`: Post a new tweet
+- `upload_media`: Upload images, videos, or GIFs to Twitter
+- `post_tweet`: Post a new tweet (with optional media attachments)
 - `search_tweets`: Search for tweets
 
 ## Example Usage
@@ -46,6 +47,8 @@ That's it! Claude can now interact with Twitter through two tools:
 Try asking Claude:
 - "Can you post a tweet saying 'Hello from Claude!'"
 - "Can you search for tweets about Claude AI?"
+- "Can you post this image with a tweet? (with image file path)"
+- "Can you upload this video and tweet it? (with video file path)"
 
 ## Troubleshooting
 
