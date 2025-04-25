@@ -17,6 +17,7 @@ import {
   TwitterError
 } from './types.js';
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 export class TwitterServer {
   private server: Server;
@@ -64,6 +65,25 @@ export class TwitterServer {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         {
+          name: 'upload_media',
+          description: 'Upload media (images, videos, or GIFs) to Twitter',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              file_path: {
+                type: 'string',
+                description: 'Path to the media file to upload'
+              },
+              type: {
+                type: 'string',
+                enum: ['tweet_image', 'tweet_video', 'tweet_gif'],
+                description: 'Type of media being uploaded'
+              }
+            },
+            required: ['file_path']
+          }
+        } as Tool,
+        {
           name: 'post_tweet',
           description: 'Post a new tweet to Twitter',
           inputSchema: {
@@ -73,6 +93,14 @@ export class TwitterServer {
                 type: 'string',
                 description: 'The content of your tweet',
                 maxLength: 280
+              },
+              media_ids: {
+                type: 'array',
+                items: {
+                  type: 'string'
+                },
+                maxItems: 4,
+                description: 'Array of media IDs to attach to the tweet (max 4)'
               }
             },
             required: ['text']
@@ -108,6 +136,8 @@ export class TwitterServer {
 
       try {
         switch (name) {
+          case 'upload_media':
+            return await this.handleUploadMedia(args);
           case 'post_tweet':
             return await this.handlePostTweet(args);
           case 'search_tweets':
@@ -124,8 +154,13 @@ export class TwitterServer {
     });
   }
 
-  private async handlePostTweet(args: unknown) {
-    const result = PostTweetSchema.safeParse(args);
+  private async handleUploadMedia(args: unknown) {
+    const result = z.object({
+      file_path: z.string(),
+      type: z.enum(['tweet_image', 'tweet_video', 'tweet_gif']).optional(),
+      additional_owners: z.array(z.string()).optional()
+    }).safeParse(args);
+
     if (!result.success) {
       throw new McpError(
         ErrorCode.InvalidParams,
@@ -133,7 +168,51 @@ export class TwitterServer {
       );
     }
 
-    const tweet = await this.client.postTweet(result.data.text);
+    const mediaId = await this.client.uploadMedia(
+      result.data.file_path,
+      {
+        type: result.data.type,
+        additionalOwners: result.data.additional_owners
+      }
+    );
+
+    return {
+      content: [{
+        type: 'text',
+        text: `Media uploaded successfully! Media ID: ${mediaId}`
+      }] as TextContent[]
+    };
+  }
+
+  private async handlePostTweet(args: unknown) {
+    const result = z.object({
+      text: z.string(),
+      media_ids: z.array(z.string()).max(4).optional()
+    }).safeParse(args);
+
+    if (!result.success) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        `Invalid parameters: ${result.error.message}`
+      );
+    }
+
+    // Convert media_ids array to proper tuple type
+    const mediaIds = result.data.media_ids?.length ? 
+      (result.data.media_ids as [string, ...string[]]).slice(0, 4) as
+        | [string]
+        | [string, string]
+        | [string, string, string]
+        | [string, string, string, string]
+      : undefined;
+
+    const tweet = await this.client.postTweet(
+      result.data.text,
+      {
+        mediaIds
+      }
+    );
+
     return {
       content: [{
         type: 'text',

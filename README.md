@@ -1,12 +1,12 @@
 # Twitter MCP Server
 
-[![smithery badge](https://smithery.ai/badge/@enescinar/twitter-mcp)](https://smithery.ai/server/@enescinar/twitter-mcp)
+<!-- [![smithery badge](https://smithery.ai/badge/@enescinar/twitter-mcp)](https://smithery.ai/server/@enescinar/twitter-mcp) -->
 
 This MCP server allows Clients to interact with Twitter, enabling posting tweets and searching Twitter.
 
-<a href="https://glama.ai/mcp/servers/dhsudtc7cd">
+<!-- <a href="https://glama.ai/mcp/servers/dhsudtc7cd">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/dhsudtc7cd/badge" alt="Twitter Server MCP server" />
-</a>
+</a> -->
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ This MCP server allows Clients to interact with Twitter, enabling posting tweets
   "mcpServers": {
     "twitter-mcp": {
       "command": "npx",
-      "args": ["-y", "@enescinar/twitter-mcp"],
+      "args": ["-y", "github:namanyayg/twitter-mcp"],
       "env": {
         "API_KEY": "your_api_key_here",
         "API_SECRET_KEY": "your_api_secret_key_here",
@@ -60,7 +60,7 @@ If you want to contribute or run from source:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/EnesCinr/twitter-mcp.git
+git clone https://github.com/namanyayg/twitter-mcp.git
 cd twitter-mcp
 ```
 

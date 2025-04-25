@@ -1,5 +1,7 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { Config, TwitterError, Tweet, TwitterUser, PostedTweet } from './types.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 export class TwitterClient {
   private client: TwitterApi;
@@ -16,12 +18,53 @@ export class TwitterClient {
     console.error('Twitter API client initialized');
   }
 
-  async postTweet(text: string): Promise<PostedTweet> {
+  async uploadMedia(filePath: string, options?: { 
+    type?: 'tweet_image' | 'tweet_video' | 'tweet_gif',
+    additionalOwners?: string[]
+  }): Promise<string> {
+    try {
+      // Get file extension to determine media type
+      const ext = path.extname(filePath).toLowerCase();
+      const isVideo = ['.mp4', '.mov'].includes(ext);
+      const isGif = ext === '.gif';
+      
+      // Read file
+      const mediaBuffer = await fs.readFile(filePath);
+      
+      // Upload based on type
+      if (isVideo || isGif) {
+        // Use chunked upload for videos and GIFs
+        const mediaId = await this.client.v1.uploadMedia(mediaBuffer, {
+          mimeType: isVideo ? 'video/mp4' : 'image/gif',
+          target: 'tweet',
+          additionalOwners: options?.additionalOwners,
+        });
+        return mediaId;
+      } else {
+        // Use simple upload for images
+        const mediaId = await this.client.v1.uploadMedia(mediaBuffer, {
+          mimeType: 'image/jpeg',
+          target: 'tweet',
+          additionalOwners: options?.additionalOwners,
+        });
+        return mediaId;
+      }
+    } catch (error) {
+      this.handleApiError(error);
+    }
+  }
+
+  async postTweet(text: string, options?: { 
+    mediaIds?: [string] | [string, string] | [string, string, string] | [string, string, string, string],
+    // ... existing options
+  }): Promise<PostedTweet> {
     try {
       const endpoint = 'tweets/create';
       await this.checkRateLimit(endpoint);
 
-      const response = await this.client.v2.tweet(text);
+      const response = await this.client.v2.tweet(text, {
+        media: options?.mediaIds ? { media_ids: options.mediaIds } : undefined,
+      });
       
       console.error(`Tweet posted successfully with ID: ${response.data.id}`);
       

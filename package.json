@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "start": "tsx src/index.ts",
+    "start": "tsx watch src/index.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
